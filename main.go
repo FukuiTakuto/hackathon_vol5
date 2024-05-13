@@ -19,9 +19,9 @@ func main() {
 
     r.GET("/", func(c *gin.Context) {
         // データベースからランダムな1行のユーザ情報を取得
-				query := sb.From("Users").Select("username", "email",false).Order("RANDOM()").Limit(1,"")
+		query := sb.From("Users").Select("username", "email",false).Order("RANDOM()").Limit(1,"")
 
-				res, err := query.Get(c)
+		res, err := query.Get(c)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
             return
