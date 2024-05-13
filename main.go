@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-    supabaseURL := "https://xyzjdfnpypknqjmiolzt.supabase.co"
-    supabaseKey := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5empkZm5weXBrbnFqbWlvbHp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTUwNTEwMzQsImV4cCI6MjAzMDYyNzAzNH0.V4lk56W0UuJBJkXTMxNRMcdkFNdbwaimBmbf1vlrDI8"
+    supabaseURL := 
+    supabaseKey := 
     sb,err := supabase.NewClient(supabaseURL, supabaseKey,nil)
 		if err != nil {
 			panic(err) 
