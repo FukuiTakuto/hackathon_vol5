@@ -1,64 +1,39 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 
-	"github.com/go-resty/resty/v2"
-
-	"github.com/gin-gonic/gin"
+	supa "github.com/nedpals/supabase-go"
 )
 
 type User struct {
-    UserID string `json:"userId"`
-    Hobby  string `json:"hobby"`
-    Age    int    `json:"age"`
+	Name  string `json:"name"`
+	Hobby string `json:"hobby"`
 }
 
-func main(){
-	router:=gin.Default()
+func updateUser(w http.ResponseWriter, r *http.Request) {
+	supabaseUrl := "<SUPABASE-URL>"
+	supabaseKey := "<SUPABASE-KEY>"
+	client := supa.CreateClient(supabaseUrl, supabaseKey)
 
-	router.PUT("/update:id",UpdateProfileHandler)
+	userID := r.URL.Query().Get("id")
+	if userID == "" {
+			http.Error(w, "User ID is required", http.StatusBadRequest)
+			return
+	}
 
-    router.Run(":8080")
-}
+	updatedData := User{
+			Name:  "New Name",  
+			Hobby: "New Hobby", 
+	}
 
-func UpdateProfileHandler(c*gin.Context){
-    userID := c.Param("id")
+	var results map[string]interface{}
+	err := client.DB.From("users").Update(updatedData).Eq("id", userID).Execute(&results)
+	if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+	}
 
-    var user User
-    if err := c.ShouldBindJSON(&user); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-        return
-    }
-
-    supabaseURL := ""
-    apiKey := ""
-
-    updateUser := map[string]interface{}{
-        "hobby": user.Hobby,
-        "age":   user.Age,
-    }
-
-    client := resty.New()
-    resp, err := client.R().
-        SetHeader("apikey", apiKey).
-        SetHeader("Authorization", "Bearer "+apiKey).
-        SetHeader("Content-Type", "application/json").
-        SetBody(updateUser).
-        Patch(supabaseURL + "/rest/v1/User?id=eq." + userID)
-
-    if err != nil {
-        log.Println("Error updating user:", err)
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
-        return
-    }
-
-    if resp.StatusCode() != http.StatusOK {
-        log.Println("Supabase responded with status:", resp.Status())
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
-        return
-    }
-
-    c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
+	fmt.Fprintf(w, "User updated successfully: %v", results)
 }
