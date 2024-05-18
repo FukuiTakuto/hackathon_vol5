@@ -1,25 +1,33 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	supa "github.com/nedpals/supabase-go"
 )
+
+func main() {
+	router := gin.Default()
+
+	router.GET("/update/:id", updateUser)
+
+	router.Run(":8080")
+}
 
 type User struct {
 	Name  string `json:"name"`
 	Hobby string `json:"hobby"`
 }
 
-func updateUser(w http.ResponseWriter, r *http.Request) {
-	supabaseUrl := "<SUPABASE-URL>"
-	supabaseKey := "<SUPABASE-KEY>"
+func updateUser(c *gin.Context) {
+	supabaseUrl := ""
+	supabaseKey := ""
 	client := supa.CreateClient(supabaseUrl, supabaseKey)
 
-	userID := r.URL.Query().Get("id")
+	userID := c.Query("id")
 	if userID == "" {
-			http.Error(w, "User ID is required", http.StatusBadRequest)
+		  c.JSON(http.StatusBadRequest, gin.H{"error": "User ID is required"})
 			return
 	}
 
@@ -31,9 +39,9 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 	var results map[string]interface{}
 	err := client.DB.From("users").Update(updatedData).Eq("id", userID).Execute(&results)
 	if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		  c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 	}
 
-	fmt.Fprintf(w, "User updated successfully: %v", results)
+	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully", "results": results})
 }
